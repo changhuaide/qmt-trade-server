@@ -95,6 +95,36 @@ events = client.poll_events(since=0)
 
 详细文档见 [docs/api_reference.md](docs/api_reference.md)。
 
+### 接口覆盖范围
+
+本项目目前封装了 **14 个 HTTP 接口**，覆盖了实际项目中常用的功能：
+
+- **交易类**：买入、卖出、撤单
+- **查询类**：持仓、资产、委托、成交
+- **行情类**：tick、K 线、合约详情、板块列表、板块股票
+- **系统类**：健康检查、事件回调
+
+**QMT 的 xtquant 库提供了更丰富的 API**（如期权、融资融券、分钟级 K 线等），但本项目未封装所有接口。如需使用未封装的接口，可以：
+
+1. 参考 [docs/qmt_innerapi_docs/](docs/qmt_innerapi_docs/) 中的 QMT 官方中文文档（包含完整的 API 列表和参数说明）
+2. 在 `server/trade_server.py` 中添加新的 HTTP endpoint，参考现有接口的实现模式（每个接口 20-30 行代码）
+3. 在 `client/qmt_http_client.py` 中添加对应的客户端方法
+
+**扩展示例**：假设需要添加"查询历史委托"接口
+
+```python
+# server/trade_server.py - 添加 endpoint
+def handle_query_history_orders(params):
+    from xtquant import xttrader
+    orders = xttrader.query_stock_orders(_account_id)  # QMT API
+    return {'success': True, 'orders': orders}
+
+# client/qmt_http_client.py - 添加客户端方法
+def get_history_orders(self):
+    resp = self._request('GET', '/history_orders')
+    return resp.get('orders', [])
+```
+
 ## 示例
 
 - [basic_usage.py](examples/basic_usage.py) — 完整使用流程
