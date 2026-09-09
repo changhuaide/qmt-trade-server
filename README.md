@@ -2,6 +2,33 @@
 
 **从外部 Python 通过 HTTP 调用 QMT 交易和行情接口的轻量级桥接工具。**
 
+## 背景
+
+近期部分券商开始关闭 miniQMT 通道，许多用户需要迁移到完整版 QMT。但完整版 QMT 的内置 Python 环境受限：
+
+- **无法安装第三方库** — 内置 Python 环境无法使用 pip，依赖管理困难
+- **难以与外部系统集成** — 无法直接连接 Web 服务、数据库、消息队列
+- **策略迁移成本高** — 原有基于 xtquant 的策略需要重写
+
+本项目提供 **HTTP 桥接方案**，让你在外部 Python 中通过标准 HTTP 协议调用 QMT 的交易和行情功能：
+
+- ✅ **低代码迁移** — 策略代码几乎不用改动，只需将 `xtquant.xxx()` 调用替换为 `client.xxx()` HTTP 调用
+- ✅ **完整功能** — 交易下单、行情查询、持仓/资产/委托/成交查询、事件回调
+- ✅ **零外部依赖** — 服务端和客户端均仅使用 Python 标准库
+
+**从 xtquant 迁移只需改 3 行代码：**
+
+```python
+# 原 xtquant 代码
+from xtquant import xttrader
+xttrader.order_stock(account, '000001.SZ', 23, 100, 11, 10.5)
+
+# 迁移后
+from client import QMTHttpClient
+client = QMTHttpClient()
+client.buy('000001.SZ', volume=100, price=10.5)
+```
+
 QMT（迅投极速策略交易系统）的内置 Python 环境无法直接安装第三方库，也难以与外部系统集成。本项目通过在 QMT 内置 Python 中运行一个 HTTP 服务端，让外部 Python 可以通过标准 HTTP 协议调用 QMT 的交易、行情、持仓等全部功能。
 
 ## 特性
